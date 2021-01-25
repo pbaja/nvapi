@@ -75,9 +75,15 @@ class PhysicalGPU:
 				})
 		return sensors
 
+#
 # Performance State https://docs.nvidia.com/gameworks/content/gameworkslibrary/coresdk/nvapi/group__gpupstate.html
-
-	def getPerfState(self):
+# P0/P1 - Maximum 3D performance
+# P2/P3 - Balanced 3D performance-power
+# P8 - Basic HD video playback
+# P10 - DVD playback
+# P12 - Minimum idle power consumption
+#
+	def getPerfState(self): # GPU_GetCurrentPstate
 		state = ctypes.c_int32()
 		self.native.GPU_GetCurrentPstate(self.handle, ctypes.byref(state))
 		return NvidiaPerformanceState(state.value)
@@ -86,7 +92,11 @@ class PhysicalGPU:
 		raise NotImplementedError() # GPU_GetDynamicPstatesInfoEx
 
 	def getPerfStates(self):
-		raise NotImplementedError() # GPU_GetPstates20
+		struct = NvidiaPerfStatesInfo()
+		print(ctypes.sizeof(NvidiaPerfStatesInfo))
+		struct.version = ctypes.sizeof(NvidiaPerfStatesInfo) | (2 << 16) #V2
+		self.native.GPU_GetPstates20(self.handle, ctypes.byref(struct))
+		return struct
 
 # Clock Control https://docs.nvidia.com/gameworks/content/gameworkslibrary/coresdk/nvapi/group__gpuclock.html
 

@@ -9,12 +9,15 @@ api.init()
 print('Initialized')
 
 # Display some info
-print(f'> API Version: {api.interfaceVersion()}')
-print(f'> Driver Version: {api.driverVersion()}')
+print(f'> API Version String: {api.interfaceVersion()}')
+print(f'> Driver Version')
+for key, value in api.driverVersion().items():
+	print(f'  - {key}: {value}')
 print('')
 
 print('Physical GPUs:')
 for gidx, gpu in enumerate(api.getPhysicalGPUs()):
+	# General info
 	print(f'GPU{gidx}: {gpu.getFullName()}')
 	print(f' > Core Count: {gpu.getCoreCount()}')
 	print(f' > BIOS Version: {gpu.getBiosVersion()}')
@@ -24,20 +27,20 @@ for gidx, gpu in enumerate(api.getPhysicalGPUs()):
 	print(f' > Bus Slot ID: {gpu.getBusSlotId()}')
 	print(f' > Perf Decrease Info: {gpu.getPerfDecreaseInfo().name}')
 	print(f' > Performance State: {gpu.getPerfState().name}')
-	
+	# Memory
 	print(f' > Memory Info')
 	for key, value in gpu.getMemoryInfo().items():
 		print(f'  - {key}: {round(value,2)} MB')
-
+	# Thermal
 	print(' > Thermal Sensors')
 	for sidx, sensor in enumerate(gpu.getThermalSensors()):
 		print(f'  - {sidx}: {sensor["target"].name}, {sensor["controller"].name}, {sensor["currentTemp"]}C')
-	
+	# Tachometer
+	try: print(f' > Cooler Tachometer: {gpu.getTachReading()}')
+	except: pass
 
-	try: 
-		print(f' > Cooler Tachometer: {gpu.getTachReading()}')
-	except: 
-		pass
+	gpu.getPerfStates()
+
 print('')
 
 # Done
