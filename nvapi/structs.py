@@ -16,3 +16,15 @@ class NvidiaThermalSettings(Structure):
 		("count", c_uint32),
 		("sensors", NvidiaThermalSensor * NVAPI_MAX_THERMAL_SENSORS_PER_GPU),
 	]
+
+class NvidiaMemoryInfo(Structure):
+	_fields_ = [
+		("version", c_uint32),
+		("dedicatedVideoMemory", c_uint32),
+		("availableDedicatedVideoMemory", c_uint32),
+		("systemVideoMemory", c_uint32),
+		("sharedSystemMemory", c_uint32),
+		("curAvailableDedicatedVideoMemory", c_uint32),
+		("dedicatedVideoMemoryEvictionsSize", c_uint32),
+		("dedicatedVideoMemoryEvictionCount", c_uint32)
+	]

@@ -1,4 +1,13 @@
-from enum import IntEnum
+from enum import IntEnum, IntFlag
+
+class NvidiaPerfDecreaseReason(IntFlag):
+	NONE = 0
+	THERMAL_PROTECTION = 1
+	POWER_CONTROL = 2
+	AC_BATT = 4
+	API_TRIGGERED = 8
+	INSUFFICIENT_POWER = 16
+	Unknown = 0x80000000
 
 class NvidiaThermalTarget(IntEnum):
 	NONE = 0
@@ -26,6 +35,26 @@ class NvidiaThermalController(IntEnum):
 	VBIOSEVT = 10
 	OS = 11
 	Unknown = -1 
+
+class NvidiaPerformanceState(IntEnum):
+	P0 = 0
+	P1 = 1
+	P2 = 2
+	P3 = 3
+	P4 = 4
+	P5 = 5
+	P6 = 6
+	P7 = 7
+	P8 = 8
+	P9 = 9
+	P10 = 10
+	P11 = 11
+	P12 = 12
+	P13 = 13
+	P14 = 14
+	P15 = 15
+	UNDEFINED = 16
+	ALL = 17
 
 class NvidiaStatus(IntEnum):
 	OK = 0

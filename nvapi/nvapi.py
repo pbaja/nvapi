@@ -9,11 +9,9 @@ from .structs import *
 class NvidiaError(Exception):
 	pass
 
-
 class NvidiaFuncPtr(CFuncPtr):
 	_flags_ = ctypes._FUNCFLAG_CDECL
 	_restype_ = ctypes.c_int
-
 
 class NvidiaNativeAPI:
 

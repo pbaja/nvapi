@@ -493,6 +493,7 @@ address_map = {
 	'VIO_Status': 0xE6CE4F1,
 	'VIO_Stop': 0x6BA2A5D6,
 	'VIO_SyncFormatDetect': 0x118D48A3,
-	# More
+	# Additional
 	'GetInterfaceVersionString': 0x1053FA5,
+	'GPU_GetMemoryInfo': 0x07F9B368
 }
