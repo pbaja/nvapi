@@ -71,7 +71,7 @@ struct('NvidiaClockEntry', [ # NV_GPU_PSTATE20_CLOCK_ENTRY_V1
 
 	("data", union('NvidiaClockEntryData', [
 		('single', struct('NvidiaClockEntryDataSingle', [
-			('freq_Khz', c_uint32)
+			('freq_khz', c_uint32)
 		])),
 		('range', struct('NvidiaClockEntryDataRange', [
 			("minFreq_kHz", c_uint32),

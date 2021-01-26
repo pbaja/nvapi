@@ -3,7 +3,11 @@ from enum import IntEnum, IntFlag
 class NvidiaClockDomain(IntFlag):
 	Graphics = 0,
 	Memory = 4,
-	Processor = 7,
+	Processor = 7
+
+class NvidiaClockType(IntFlag):
+	Single = 0,
+	Range = 1
 
 class NvidiaPerfDecreaseReason(IntFlag):
 	NONE = 0

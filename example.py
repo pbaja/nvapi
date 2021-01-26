@@ -1,4 +1,4 @@
-from nvapi import NvidiaAPI, NvidiaClockDomain
+from nvapi import NvidiaAPI, NvidiaClockDomain, NvidiaClockType
 
 # Load DLL and Initialize
 api = NvidiaAPI(verbose=True)
@@ -14,9 +14,17 @@ for gidx, gpu in enumerate(api.getPhysicalGPUs()):
 	for state in states.pstates[:states.numPstates]:
 		print(f' P{state.pStateId}, editable:{state.blsEditable}')
 		for clock in state.clocks[:states.numClocks]:
-			print(f'  Clock, domain:{NvidiaClockDomain(clock.domainId).name} type:{clock.typeId} edit:{clock.blsEditable}')
-			print(f'   freqDelta, min:{clock.freqDelta_kHz.valueRange.min} max:{clock.freqDelta_kHz.valueRange.max} value:{clock.freqDelta_kHz.value}')
-			print(f'   data, single: {clock.data.single.freq_Khz}')
+			clockDomain = NvidiaClockDomain(clock.domainId)
+			clockType = NvidiaClockType(clock.typeId)
+			print(f'  Clock, domain:{clockDomain.name} type:{clockType.name} edit:{clock.blsEditable}')
+			print(f'   Delta, min:{clock.freqDelta_kHz.valueRange.min} kHz max:{clock.freqDelta_kHz.valueRange.max} kHz value:{clock.freqDelta_kHz.value} kHz')
+			if clockType == NvidiaClockType.Single:
+				print(f'   Data, freq:{clock.data.single.freq_khz} kHz')
+			else:
+				clockRange = clock.data.range
+				print(f'   Data, min:{clockRange.minFreq_kHz} kHz max:{clockRange.maxFreq_kHz} kHz domain:{clockRange.domainId} minVoltage:{clockRange.minVoltage_uV} uV maxVoltage:{clockRange.maxVoltage_uV} uV')
+	for voltage in states.voltages.voltages[:states.voltages.numVoltages]:
+		print(f'Voltage, domain:{voltage.domainId} editable:{voltage.blsEditable} volt:{voltage.volt_uV} uV voltDelta:{voltage.voltDelta_uV} uV')
 
 # Done
 api.dispose()
