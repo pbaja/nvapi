@@ -1,48 +1,22 @@
-from nvapi import NvidiaAPI
+from nvapi import NvidiaAPI, NvidiaClockDomain
 
-# Load DLL
+# Load DLL and Initialize
 api = NvidiaAPI(verbose=True)
-print('Loaded')
-
-# Initialize API
 api.init()
-print('Initialized')
 
-# Display some info
-print(f'> API Version String: {api.interfaceVersion()}')
-print(f'> Driver Version')
-for key, value in api.driverVersion().items():
-	print(f'  - {key}: {value}')
-print('')
-
-print('Physical GPUs:')
+# Display clocks for every GPU
 for gidx, gpu in enumerate(api.getPhysicalGPUs()):
-	# General info
 	print(f'GPU{gidx}: {gpu.getFullName()}')
-	print(f' > Core Count: {gpu.getCoreCount()}')
-	print(f' > BIOS Version: {gpu.getBiosVersion()}')
-	print(f' > BIOS Revision: {gpu.getBiosRevision()}')
-	print(f' > BIOS OEM Revision: {gpu.getBiosOEMRevision()}')
-	print(f' > Bus ID: {gpu.getBusId()}')
-	print(f' > Bus Slot ID: {gpu.getBusSlotId()}')
-	print(f' > Perf Decrease Info: {gpu.getPerfDecreaseInfo().name}')
-	print(f' > Performance State: {gpu.getPerfState().name}')
-	# Memory
-	print(f' > Memory Info')
-	for key, value in gpu.getMemoryInfo().items():
-		print(f'  - {key}: {round(value,2)} MB')
-	# Thermal
-	print(' > Thermal Sensors')
-	for sidx, sensor in enumerate(gpu.getThermalSensors()):
-		print(f'  - {sidx}: {sensor["target"].name}, {sensor["controller"].name}, {sensor["currentTemp"]}C')
-	# Tachometer
-	try: print(f' > Cooler Tachometer: {gpu.getTachReading()}')
-	except: pass
+	states = gpu.getPerfStates()
 
-	gpu.getPerfStates()
-
-print('')
+	print(f"Editable: {states.blsEditable}")
+	print(f"PerfStates:")
+	for state in states.pstates[:states.numPstates]:
+		print(f' P{state.pStateId}, editable:{state.blsEditable}')
+		for clock in state.clocks[:states.numClocks]:
+			print(f'  Clock, domain:{NvidiaClockDomain(clock.domainId).name} type:{clock.typeId} edit:{clock.blsEditable}')
+			print(f'   freqDelta, min:{clock.freqDelta_kHz.valueRange.min} max:{clock.freqDelta_kHz.valueRange.max} value:{clock.freqDelta_kHz.value}')
+			print(f'   data, single: {clock.data.single.freq_Khz}')
 
 # Done
 api.dispose()
-print('Disposed')

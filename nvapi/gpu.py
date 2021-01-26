@@ -61,19 +61,7 @@ class PhysicalGPU:
 		struct.version = ctypes.sizeof(NvidiaThermalSettings) | (2 << 16) #V2
 		if sensorIdx is None: sensorIdx = NvidiaThermalTarget.ALL
 		self.native.GPU_GetThermalSettings(self.handle, sensorIdx, ctypes.byref(struct))
-
-		# Parse
-		sensors = []
-		for i in range(struct.count):
-			sensor = struct.sensors[i]
-			sensors.append({
-				'controller': NvidiaThermalController(sensor.controller),
-				'defaultMinTemp': sensor.defaultMinTemp,
-				'defaultMaxTemp': sensor.defaultMaxTemp,
-				'currentTemp': sensor.currentTemp,
-				'target': NvidiaThermalTarget(sensor.target),
-				})
-		return sensors
+		return struct
 
 #
 # Performance State https://docs.nvidia.com/gameworks/content/gameworkslibrary/coresdk/nvapi/group__gpupstate.html
@@ -93,7 +81,6 @@ class PhysicalGPU:
 
 	def getPerfStates(self):
 		struct = NvidiaPerfStatesInfo()
-		print(ctypes.sizeof(NvidiaPerfStatesInfo))
 		struct.version = ctypes.sizeof(NvidiaPerfStatesInfo) | (2 << 16) #V2
 		self.native.GPU_GetPstates20(self.handle, ctypes.byref(struct))
 		return struct
@@ -117,14 +104,4 @@ class PhysicalGPU:
 		struct = NvidiaMemoryInfo()
 		struct.version = ctypes.sizeof(NvidiaMemoryInfo) | (3 << 16) #V3
 		self.native.GPU_GetMemoryInfo(self.handle, ctypes.byref(struct))
-
-		# Parse to MB
-		return {
-			'dedicatedVideoMemory': struct.dedicatedVideoMemory / 1024.0,
-			'availableDedicatedVideoMemory': struct.availableDedicatedVideoMemory / 1024.0,
-			'systemVideoMemory': struct.systemVideoMemory / 1024.0,
-			'sharedSystemMemory': struct.sharedSystemMemory / 1024.0,
-			'curAvailableDedicatedVideoMemory': struct.curAvailableDedicatedVideoMemory / 1024.0,
-			'dedicatedVideoMemoryEvictionsSize': struct.dedicatedVideoMemoryEvictionsSize / 1024.0,
-			'dedicatedVideoMemoryEvictionCount': struct.dedicatedVideoMemoryEvictionCount / 1024.0
-		}
+		return struct

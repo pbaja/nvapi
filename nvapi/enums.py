@@ -1,5 +1,10 @@
 from enum import IntEnum, IntFlag
 
+class NvidiaClockDomain(IntFlag):
+	Graphics = 0,
+	Memory = 4,
+	Processor = 7,
+
 class NvidiaPerfDecreaseReason(IntFlag):
 	NONE = 0
 	THERMAL_PROTECTION = 1
