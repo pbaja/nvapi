@@ -85,6 +85,10 @@ class PhysicalGPU:
 		self.native.GPU_GetPstates20(self.handle, ctypes.byref(struct))
 		return struct
 
+	def setPerfStates(self, struct):
+		struct.version = ctypes.sizeof(NvidiaPerfStatesInfo) | (2 << 16) #V2
+		self.native.GPU_SetPstates20(self.handle, ctypes.byref(struct))
+
 # Clock Control https://docs.nvidia.com/gameworks/content/gameworkslibrary/coresdk/nvapi/group__gpuclock.html
 
 	def getAllClockFrequencies(self):
