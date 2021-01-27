@@ -1,5 +1,12 @@
 from enum import IntEnum, IntFlag
 
+class NvidiaCoolerTarget(IntFlag):
+	Zero = 0
+	GPU = 0b1
+	Memory = 0b10
+	PowerSupply = 0b100
+	All = GPU | Memory | PowerSupply
+
 class NvidiaClockDomain(IntFlag):
 	Graphics = 0,
 	Memory = 4,

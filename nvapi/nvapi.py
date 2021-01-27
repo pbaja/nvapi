@@ -13,6 +13,11 @@ class NvidiaFuncPtr(CFuncPtr):
 	_flags_ = ctypes._FUNCFLAG_CDECL
 	_restype_ = ctypes.c_int
 
+def wrap(self, address):
+	pointer = self.api.nvapi_QueryInterface(address)
+	function = NvidiaFuncPtr(pointer)
+	return self._ErrorWrapper(function)
+
 class NvidiaNativeAPI:
 
 	def __init__(self):
@@ -21,12 +26,10 @@ class NvidiaNativeAPI:
 		try:
 			self.api = ctypes.cdll.LoadLibrary('nvapi.dll')
 		except: 
-			
 			try:
 				self.api = ctypes.cdll.LoadLibrary('nvapi64.dll')
 			except Exception as e:
 				raise NvidiaError(f"Failed to load nvapi.dll: {e}")
-				return
 
 		# Create functions
 		for attr, addr in functions.address_map.items():
@@ -38,13 +41,15 @@ class NvidiaNativeAPI:
 			# Add to object
 			setattr(self, attr, function_wrapped)
 
+	def __getattr__(self, name):
+		raise AttributeError(name)
+
 	def _ErrorWrapper(self, function):
 		def wrapper(*args, **kwargs):
 			result = function(*args, **kwargs)
 			if result != NvidiaStatus.OK:
-				buf = ctypes.create_string_buffer(NVAPI_SHORT_STRING_MAX)
-				self.GetErrorMessage(result, buf)
-				raise NvidiaError(buf.value.decode())
+				msg = self.GetErrorMessage(result)
+				raise NvidiaError(msg)
 			return None
 		return wrapper
 

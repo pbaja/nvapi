@@ -32,11 +32,14 @@ for gidx, gpu in enumerate(api.getPhysicalGPUs()):
 		print(f'  - {key}: {round(value,2)} MB')
 	# Thermal
 	print(' > Thermal Sensors')
-	for sidx, sensor in enumerate(gpu.getThermalSensors()):
-		print(f'  - {sidx}: {sensor["target"].name}, {sensor["controller"].name}, {sensor["currentTemp"]}C')
+	thermal = gpu.getThermalSettings()
+	for i in range(thermal.count):
+		sensor = thermal.sensors[i]
+		print(f'  - {i}: {sensor.target}, {sensor.controller}, {sensor.currentTemp}C')
+	
 	# Tachometer
-	try: print(f' > Cooler Tachometer: {gpu.getTachReading()}')
-	except: pass
+	# try: print(f' > Cooler Tachometer: {gpu.getTachReading()}')
+	# except: pass
 	print('')
 
 # Done

@@ -55,7 +55,7 @@ class PhysicalGPU:
 
 # Thermal https://docs.nvidia.com/gameworks/content/gameworkslibrary/coresdk/nvapi/group__gputhermal.html
 
-	def getThermalSensors(self, sensorIdx=None):
+	def getThermalSettings(self, sensorIdx=None):
 		# Get info
 		struct = NvidiaThermalSettings()
 		struct.version = ctypes.sizeof(NvidiaThermalSettings) | (2 << 16) #V2
@@ -97,9 +97,17 @@ class PhysicalGPU:
 # Cooler Interface https://docs.nvidia.com/gameworks/content/gameworkslibrary/coresdk/nvapi/group__gpucooler.html
 
 	def getTachReading(self):
+		'''Supported only up to GTX 1XXX'''
 		reading = ctypes.c_uint32()
 		self.native.GPU_GetTachReading(self.handle, ctypes.byref(reading))
 		return reading.value
+
+	def getCoolerSettings(self, target=None):
+		struct = NvidiaCoolerSettings()
+		struct.version = ctypes.sizeof(NvidiaCoolerSettings) | (1 << 16) #V1
+		if target is None: target = NvidiaCoolerTarget.All
+		self.native.GPU_GetCoolerSettings(self.handle, target, ctypes.byref(struct))
+		return struct
 
 # Graphics Driver https://docs.nvidia.com/gameworks/content/gameworkslibrary/coresdk/nvapi/group__driverapi.html
 

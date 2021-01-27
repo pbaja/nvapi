@@ -1,4 +1,4 @@
-from tkinter import *
+import tkinter as tk
 import time
 import tkinter.ttk as ttk
 from nvapi import NvidiaAPI
@@ -6,7 +6,7 @@ from nvapi import NvidiaAPI
 FONT = ('Open Sans', 10)
 
 def createWindow():
-    root = Tk()
+    root = tk.Tk()
     root.tk_setPalette(background='#222', foreground='#FFF', activeBackground='#444', activeForeground='#FFF')
     root.geometry('300x350')
     root.title("NvTuner")
@@ -14,36 +14,36 @@ def createWindow():
     return root
 
 def createTitle(parent, row, text):
-    w = Label(parent, text=text, borderwidth=2, font=('Open Sans Semibold', 11), foreground='#999')
+    w = tk.Label(parent, text=text, borderwidth=2, font=('Open Sans Semibold', 11), foreground='#999')
     w.columnconfigure(0, weight=1)
-    w.grid(row=row, column=0, columnspan=2, sticky=NSEW)
+    w.grid(row=row, column=0, columnspan=2, sticky=tk.NSEW)
 
 def createTextRow(parent, row, label):
     # Label
-    w = Label(parent, text=label, anchor=W, font=FONT)
+    w = tk.Label(parent, text=label, anchor=tk.W, font=FONT)
     w.columnconfigure(0, weight=0)
-    w.grid(row=row, column=0, sticky=NSEW)
+    w.grid(row=row, column=0, sticky=tk.NSEW)
     # Text
-    label_text = StringVar()
+    label_text = tk.StringVar()
     label_text.set('-')
-    w = Label(parent, textvariable=label_text, font=FONT)
+    w = tk.Label(parent, textvariable=label_text, font=FONT)
     w.columnconfigure(0, weight=1)
-    w.grid(row=row, column=1, sticky=NSEW)
+    w.grid(row=row, column=1, sticky=tk.NSEW)
     return label_text
 
 def createTuningRow(parent, row, label):
     # Label
-    w = Label(parent, text=label, anchor=W, font=FONT)
-    w.grid(row=row, column=0, sticky=NSEW)
+    w = tk.Label(parent, text=label, anchor=tk.W, font=FONT)
+    w.grid(row=row, column=0, sticky=tk.NSEW)
     # Entry
-    e = Entry(parent, text='', font=FONT)
-    e.grid(row=row, column=1, sticky=NSEW)
+    e = tk.Entry(parent, text='', font=FONT)
+    e.grid(row=row, column=1, sticky=tk.NSEW)
 
 def createInfoFrame(parent, labels=[]):
     # Configure
-    frame = Frame(parent, bg='red')
+    frame = tk.Frame(parent, bg='red')
     frame.columnconfigure(0, weight=1)
-    frame.pack(anchor=N, fill=BOTH, expand=False)
+    frame.pack(anchor=tk.N, fill=tk.BOTH, expand=False)
     # Add widgets
     createTitle(frame, 0, 'Info')
     string_vars = []
@@ -54,9 +54,9 @@ def createInfoFrame(parent, labels=[]):
 
 def createTuneFrame(parent):
     # Configure
-    frame = Frame(parent)
+    frame = tk.Frame(parent)
     frame.columnconfigure(0, weight=1)
-    frame.pack(anchor=N, fill=BOTH, expand=True)
+    frame.pack(anchor=tk.N, fill=tk.BOTH, expand=True)
     # Add widgets
     createTitle(frame, 0, 'Tuner')
     createTuningRow(frame, 1, 'Core offset')
@@ -86,13 +86,13 @@ if __name__ == '__main__':
         # Grab info
         gpu_name = gpu.getFullName()
         # Create tab frame
-        frame = Frame(tabs)
+        frame = tk.Frame(tabs)
         tabs.add(frame, text=gpu_name)
         # Create info frame
         stringvars = createInfoFrame(frame, ['Name', 'Core clock', 'Memory clock', 'Temp', 'Fan speed', 'Free VRAM', 'Perf state'])
         stringvars[0].set(gpu_name)
         strings.append(stringvars)
-    tabs.pack(expand=True, fill=BOTH)
+    tabs.pack(expand=True, fill=tk.BOTH)
 
     # Run
     try:
@@ -102,14 +102,19 @@ if __name__ == '__main__':
             if time.time() - timer > 1.0:
                 timer = time.time()
                 for i, gpu in enumerate(gpus):
+
                     states = gpu.getPerfStates()
                     strings[i][1].set(f'{states.pstates[0].clocks[0].data.range.maxFreq_kHz // 1000} Mhz')
                     strings[i][2].set(f'{states.pstates[0].clocks[1].data.range.maxFreq_kHz // 1000} Mhz')
-                    sensors = gpu.getThermalSensors()
-                    if sensors.count > 0: 
-                        temp = sensors.sensors[0].currentTemp
+                    settings = gpu.getThermalSettings()
+                    if settings.count > 0: 
+                        temp = settings.sensors[0].currentTemp
                         strings[i][3].set(f'{temp} °C')
                         
+                    #gpu.getCoolerSettings()
+                    #reading = gpu.getTachReading()
+                    #print(reading)
+
                     #strings[i][4].set(f'')
                     #strings[i][5].set(f'')
                     strings[i][6].set(f'P{gpu.getPerfState()}')
@@ -118,5 +123,5 @@ if __name__ == '__main__':
             # Update tkinter
             root.update_idletasks()
             root.update()
-    except TclError:
+    except tk.TclError:
         pass

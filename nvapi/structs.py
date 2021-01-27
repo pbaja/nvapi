@@ -1,8 +1,13 @@
-from ctypes import *
+import ctypes, sys, inspect
 from .defines import *
 
 # Data types
-c_enum = c_int32
+
+enum = ctypes.c_int32
+int32 = ctypes.c_int32
+uint32 = ctypes.c_uint32
+
+# Base classes
 
 def _getitem(self, i):
 	name = self._fields_[i][0]
@@ -11,96 +16,135 @@ def _getitem(self, i):
 		value = dict(value)
 	return (name, value)
 
-def struct(name, fields):
-	StructType = type(name, (Structure,), { '_fields_': fields, '__getitem__': _getitem})
-	globals()[name] = StructType
-	return StructType
+class Union(ctypes.Union):
+	def __getitem__(self, i):
+		return _getitem(self, i)
 
-def union(name, structs):
-	UnionType = type(name, (Union,), {'_fields_': structs, '__getitem__': _getitem })
-	globals()[name] = UnionType
-	return UnionType
+class Structure(ctypes.Structure):
+	def __getitem__(self, i):
+		return _getitem(self, i)
 
+# Structures
 
-struct('NvidiaThermalSettings', [
-		("version", c_uint32),
-		("count", c_uint32),
+class NvidiaThermalSettings(Structure):
+	class NvidiaThermalSensor(Structure):
+		_fields_ = [
+			("controller", enum),
+			("defaultMinTemp", int32),
+			("defaultMaxTemp", int32),
+			("currentTemp", int32),
+			("target", enum)
+		]
+	_fields_ = [
+		("version", uint32),
+		("count", uint32),
+		("sensors", NvidiaThermalSensor * NVAPI_MAX_THERMAL_SENSORS_PER_GPU)
+	]
 
-		("sensors", struct('NvidiaThermalSensor', [
-			("controller", c_int), # enum
-			("defaultMinTemp", c_int32),
-			("defaultMaxTemp", c_int32),
-			("currentTemp", c_int32),
-			("target", c_enum),
-		]) * NVAPI_MAX_THERMAL_SENSORS_PER_GPU)
-	])
+class NvidiaCoolerSettings(Structure):
+	class NvidiaCooler(Structure):
+		_fields_ = [
+			("type", enum),
+			("controller", enum),
+			("defaultMinLevel", uint32),
+			("defaultMaxLevel", uint32),
+			("currentMinLevel", uint32),
+			("currentMaxLevel", uint32),
+			("currentLevel", uint32),
+			("defaultPolicy", enum),
+			("currentPolicy", enum),
+			("target", enum),
+			("controlMode", enum),
+			("active", uint32)
+		]
+	_fields_ = [
+		("version", uint32),
+		("count", uint32),
+		("coolers", NvidiaCooler * NVAPI_MAX_COOLERS_PER_GPU)
+	]
 
-struct('NvidiaMemoryInfo', [
-	("version", c_uint32),
-	("dedicatedVideoMemory", c_uint32),
-	("availableDedicatedVideoMemory", c_uint32),
-	("systemVideoMemory", c_uint32),
-	("sharedSystemMemory", c_uint32),
-	("curAvailableDedicatedVideoMemory", c_uint32),
-	("dedicatedVideoMemoryEvictionsSize", c_uint32),
-	("dedicatedVideoMemoryEvictionCount", c_uint32)
-])
+class NvidiaMemoryInfo(Structure):
+	_fields_ = [
+		("version", uint32),
+		("dedicatedVideoMemory", uint32),
+		("availableDedicatedVideoMemory", uint32),
+		("systemVideoMemory", uint32),
+		("sharedSystemMemory", uint32),
+		("curAvailableDedicatedVideoMemory", uint32),
+		("dedicatedVideoMemoryEvictionsSize", uint32),
+		("dedicatedVideoMemoryEvictionCount", uint32)
+	]
 
-struct('NvidiaParamDelta', [ # NV_GPU_PERF_PSTATES20_PARAM_DELTA
-	("value", c_int32),
-	("valueRange", struct('MinMax', [
-		("min", c_int32),
-		("max", c_int32)
-	]))
-])
+class NvidiaParamDelta(Structure):
+	class NvidiaValueRange(Structure):
+		_fields_ = [
+			("min", int32),
+			("max", int32)
+		]
+	_fields_ = [
+		("value", int32),
+		("valueRange", NvidiaValueRange)
+	]
 
-struct('NvidiaBaseVoltageEntry', [ # NV_GPU_PSTATE20_BASE_VOLTAGE_ENTRY_V1 
-	("domainId", c_enum),
-	("blsEditable", c_uint32, 1),
-	("reserved", c_uint32, 31),
-	("volt_uV", c_uint32),
-	("voltDelta_uV", NvidiaParamDelta),
-])
+class NvidiaBaseVoltageEntry(Structure):  # NV_GPU_PSTATE20_BASE_VOLTAGE_ENTRY_V1 
+	_fields_ = [
+		("domainId", enum),
+		("blsEditable", uint32, 1),
+		("reserved", uint32, 31),
+		("volt_uV", uint32),
+		("voltDelta_uV", NvidiaParamDelta),
+	]
 
-struct('NvidiaClockEntry', [ # NV_GPU_PSTATE20_CLOCK_ENTRY_V1 
-	("domainId", c_enum),
-	("typeId", c_enum),
-	("blsEditable", c_uint32, 1),
-	("reserved", c_uint32, 31),
-	("freqDelta_kHz", NvidiaParamDelta),
+class NvidiaClockEntry(Structure): # NV_GPU_PSTATE20_CLOCK_ENTRY_V1 
+	class NvidiaClockEntryData(Union):
+		class NvidiaClockEntryDataSingle(Structure):
+			_fields_ = [
+				('freq_khz', uint32)
+			]
+		class NvidiaClockEntryDataRange(Structure):
+			_fields_ = [
+				("minFreq_kHz", uint32),
+				("maxFreq_kHz", uint32),
+				("domainId", enum),
+				("minVoltage_uV", uint32),
+				("maxVoltage_uV", uint32)
+			]
+		_fields_ = [
+			("min", int32),
+			("max", int32),
+			("single", NvidiaClockEntryDataSingle),
+			("range", NvidiaClockEntryDataRange)
+		]
+	_fields_ = [
+		("domainId", enum),
+		("typeId", enum),
+		("blsEditable", uint32, 1),
+		("reserved", uint32, 31),
+		("freqDelta_kHz", NvidiaParamDelta),
+		("data", NvidiaClockEntryData)
+	]
 
-	("data", union('NvidiaClockEntryData', [
-		('single', struct('NvidiaClockEntryDataSingle', [
-			('freq_khz', c_uint32)
-		])),
-		('range', struct('NvidiaClockEntryDataRange', [
-			("minFreq_kHz", c_uint32),
-			("maxFreq_kHz", c_uint32),
-			("domainId", c_enum),
-			("minVoltage_uV", c_uint32),
-			("maxVoltage_uV", c_uint32)
-		]))
-	])),
-])
-
-struct('NvidiaPerfStatesInfo', [ # NV_GPU_PERF_PSTATES20_INFO_V2
-	('version', c_uint32),
-	("blsEditable", c_uint32, 1),
-	("reserved", c_uint32, 31),
-	("numPstates", c_uint32),
-	("numClocks", c_uint32),
-	("numBaseVoltages", c_uint32),
-
-	('pstates', struct('NvidiaPerfState', [
-		('pStateId', c_enum),
-		("blsEditable", c_uint32, 1),
-		("reserved", c_uint32, 31),
-		("clocks", NvidiaClockEntry * NVAPI_MAX_GPU_PSTATE20_CLOCKS),
-		("baseVoltages", NvidiaBaseVoltageEntry * NVAPI_MAX_GPU_PSTATE20_BASE_VOLTAGES),
-	]) * NVAPI_MAX_GPU_PSTATE20_PSTATES),
-
-	('voltages', struct('NvidiaOverVoltage', [
-		('numVoltages', c_uint32),
-		('voltages', NvidiaBaseVoltageEntry * NVAPI_MAX_GPU_PSTATE20_BASE_VOLTAGES)
-	]))
-])
+class NvidiaPerfStatesInfo(Structure): # NV_GPU_PERF_PSTATES20_INFO_V2
+	class NvidiaPerfState(Structure):
+		_fields_ = [
+			('pStateId', enum),
+			("blsEditable", uint32, 1),
+			("reserved", uint32, 31),
+			("clocks", NvidiaClockEntry * NVAPI_MAX_GPU_PSTATE20_CLOCKS),
+			("baseVoltages", NvidiaBaseVoltageEntry * NVAPI_MAX_GPU_PSTATE20_BASE_VOLTAGES),
+		]
+	class NvidiaOverVoltage(Structure):
+		_fields_ = [
+			('numVoltages', uint32),
+			('voltages', NvidiaBaseVoltageEntry * NVAPI_MAX_GPU_PSTATE20_BASE_VOLTAGES)
+		]
+	_fields_ = [
+		('version', uint32),
+		("blsEditable", uint32, 1),
+		("reserved", uint32, 31),
+		("numPstates", uint32),
+		("numClocks", uint32),
+		("numBaseVoltages", uint32),
+		("pstates", NvidiaPerfState * NVAPI_MAX_GPU_PSTATE20_PSTATES),
+		("voltages", NvidiaOverVoltage)
+	]
