@@ -12,6 +12,9 @@ class NvidiaError(Exception):
         super().__init__(msg)
         self.status = status
 
+class ApiError(Exception):
+    pass
+
 class NvidiaFuncPtr(CFuncPtr):
     _flags_ = ctypes._FUNCFLAG_CDECL
     _restype_ = ctypes.c_int
@@ -27,18 +30,22 @@ class NvidiaNativeAPI:
             try:
                 self.api = ctypes.cdll.LoadLibrary('nvapi64.dll')
             except Exception as e:
-                raise NvidiaError(f"Failed to load nvapi.dll: {e}")
+                raise ApiError(f"Failed to load nvapi.dll: {e}")
 
         # Functions
-        self.GetErrorMessage           = self._wrap(0x6C2D048C, raiseErrors=False)
-        self.Initialize                = self._wrap(0x0150E828)
-        self.GPU_GetFullName           = self._wrap(0xCEEE8E9F)
-        self.GetInterfaceVersionString = self._wrap(0x01053FA5)
-        self.EnumPhysicalGPUs          = self._wrap(0xE5AC921F)
-        self.GPU_GetPstates20          = self._wrap(0x6FF81213)
-        self.GPU_GetThermalSettings    = self._wrap(0xE3640A56)
-        self.GPU_GetCurrentPstate      = self._wrap(0x927DA4F6)
-        self.GPU_GetTachReading        = self._wrap(0x5F608315)
+        self.GetErrorMessage            = self._wrap(0x6C2D048C, raiseErrors=False)
+        self.Initialize                 = self._wrap(0x0150E828)
+        self.GPU_GetFullName            = self._wrap(0xCEEE8E9F)
+        self.GetInterfaceVersionString  = self._wrap(0x01053FA5)
+        self.EnumPhysicalGPUs           = self._wrap(0xE5AC921F)
+        self.GPU_GetPstates20           = self._wrap(0x6FF81213)
+        self.GPU_SetPstates20           = self._wrap(0x0F4DAE6B)
+        self.GPU_GetThermalSettings     = self._wrap(0xE3640A56)
+        self.GPU_GetCurrentPstate       = self._wrap(0x927DA4F6)
+        self.GPU_GetTachReading         = self._wrap(0x5F608315)
+        self.GPU_GetMemoryInfo          = self._wrap(0x07F9B368)
+        self.GPU_GetAllClockFrequencies = self._wrap(0xDCB616C3)
+        self.GPU_EnableDynamicPstates   = self._wrap(0xFA579A0F)
 
     def _wrap(self, address, raiseErrors=True):
 

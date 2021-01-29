@@ -51,6 +51,11 @@ class NvidiaClockType(IntEnum):
     SINGLE             = 0b00000000 # Domains that use single frequency value within given pstate
     RANGE              = 0b00000001 # Domains that allow range of frequency values within given pstate
 
+class NvidiaClockFrequencyType(IntEnum): # NV_GPU_CLOCK_FREQUENCIES_CLOCK_TYPE 
+    CURRENT_FREQ = 0
+    BASE_CLOCK   = 1
+    BOOST_CLOCK  = 2
+
 class NvidiaThermalController(IntEnum):
     NONE = 0
     GPU_INTERNAL = 1

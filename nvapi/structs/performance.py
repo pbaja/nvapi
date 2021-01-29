@@ -75,3 +75,19 @@ class NvidiaPerfStatesInfo(Structure): # NV_GPU_PERF_PSTATES20_INFO_V2
         ("pstates", NvidiaPerfState * NVAPI_MAX_GPU_PSTATE20_PSTATES),
         ("voltages", NvidiaOverVoltage)
     ]
+
+class NvidiaClockFrequencies(Structure): # NV_GPU_CLOCK_FREQUENCIES_V2
+    class NvidiaClockFrequency(Structure):
+        _fields_ = [
+            ('blsPresent', uint32, 1),
+            ('reserved', uint32, 31),
+            ('frequency', uint32)
+        ]
+    _fields_ = [
+        ('version', uint32),
+        ('clockType', uint32, 4),
+        ('reserved', uint32, 20),
+        ('reserved1', uint32, 8),
+        ('domain', NvidiaClockFrequency * NVAPI_MAX_GPU_PUBLIC_CLOCKS),
+    ]
+    

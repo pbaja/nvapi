@@ -11,5 +11,5 @@ class GPUDriverSettings:
         # Get info
         struct = NvidiaMemoryInfo()
         struct.version = ctypes.sizeof(NvidiaMemoryInfo) | (3 << 16) #V3
-        self._gpu.native.GPU_GetMemoryInfo(self.handle, ctypes.byref(struct))
+        self._gpu.native.GPU_GetMemoryInfo(self._gpu.handle, ctypes.byref(struct))
         return struct

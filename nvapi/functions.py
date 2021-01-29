@@ -237,12 +237,10 @@ address_map = {
     'GPU_ClientPowerPoliciesSetStatus': 0xAD95F5ED,
     'GPU_ClientPowerTopologyGetInfo': 0xA4DFD3F2,
     'GPU_ClientPowerTopologyGetStatus': 0xEDCF624E,
-    'GPU_EnableDynamicPstates': 0xFA579A0F,
     'GPU_EnableOverclockedPstates': 0xB23B70EE,
     'GPU_Get_DisplayPort_DongleInfo': 0x76A70E8D,
     'GPU_GetActiveOutputs': 0xE3E89B6F,
     'GPU_GetAGPAperture': 0x6E042794,
-    'GPU_GetAllClockFrequencies': 0xDCB616C3,
     'GPU_GetAllDisplayIds': 0x785210A2,
     'GPU_GetAllOutputs': 0x7D554F8E,
     'GPU_GetBoardInfo': 0x22D54523,
@@ -325,7 +323,6 @@ address_map = {
     'GPU_SetPixelClockRange': 0x5AC7F8E5,
     'GPU_SetPowerMizerInfo': 0x50016C78,
     'GPU_SetPstateClientLimits': 0xFDFC7D49,
-    'GPU_SetPstates20': 0xF4DAE6B,
     'GPU_SetPstatesInfo': 0xCDF27911,
     'GPU_SetScanoutNvAPI_Statusensity': 0xA57457A4,
     'GPU_SetScanoutWarping': 0xB34BAB4F,
@@ -488,5 +485,4 @@ address_map = {
     'VIO_SyncFormatDetect': 0x118D48A3,
     # Additional
     'GetInterfaceVersionString': 0x1053FA5,
-    'GPU_GetMemoryInfo': 0x07F9B368
 }
