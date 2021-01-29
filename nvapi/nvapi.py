@@ -8,7 +8,9 @@ from .structs import *
 
 
 class NvidiaError(Exception):
-    pass
+    def __init__(self, msg, status):
+        super().__init__(msg)
+        self.status = status
 
 class NvidiaFuncPtr(CFuncPtr):
     _flags_ = ctypes._FUNCFLAG_CDECL
@@ -36,6 +38,7 @@ class NvidiaNativeAPI:
         self.GPU_GetPstates20          = self._wrap(0x6FF81213)
         self.GPU_GetThermalSettings    = self._wrap(0xE3640A56)
         self.GPU_GetCurrentPstate      = self._wrap(0x927DA4F6)
+        self.GPU_GetTachReading        = self._wrap(0x5F608315)
 
     def _wrap(self, address, raiseErrors=True):
 
@@ -53,8 +56,8 @@ class NvidiaNativeAPI:
             result = native_function(*args, **kwargs)
             if result != NvidiaStatus.OK:
                 msg = ctypes.create_string_buffer(NVAPI_SHORT_STRING_MAX)
-                self.GetErrorMessage(result)
-                raise NvidiaError(msg.value.decode())
+                self.GetErrorMessage(result, ctypes.byref(msg))
+                raise NvidiaError(msg.value.decode(), NvidiaStatus(result))
             return None
         return wrapper
 

@@ -8,12 +8,15 @@ class GPUGeneralSettings:
 
     def __init__(self, gpu):
         self._gpu = gpu
+        self._fullName = None 
 
     def getFullName(self) -> str:
         '''Retrieves full gpu name as string - for example, "GeForce RTX3060Ti".'''
-        name = ctypes.create_string_buffer(NVAPI_SHORT_STRING_MAX)
-        self._gpu.native.GPU_GetFullName(self._gpu.handle, name)
-        return name.value.decode()
+        if self._fullName is None:
+            name = ctypes.create_string_buffer(NVAPI_SHORT_STRING_MAX)
+            self._gpu.native.GPU_GetFullName(self._gpu.handle, name)
+            self._fullName = name.value.decode()
+        return self._fullName
 
     def getCoreCount(self) -> int:
         '''Total number of cores defined for a GPU.'''

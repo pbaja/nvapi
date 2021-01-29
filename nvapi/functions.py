@@ -296,7 +296,6 @@ address_map = {
     'GPU_GetShaderSubPipeCount': 0xBE17923,
     'GPU_GetSMMask': 0xEB7AF173,
     'GPU_GetSystemType': 0xBAAABFCC,
-    'GPU_GetTachReading': 0x5F608315,
     'GPU_GetTotalSMCount': 0xAE5FBCFE,
     'GPU_GetTotalSPCount': 0xB6D62591,
     'GPU_GetTotalTPCCount': 0x4E2F76A8,

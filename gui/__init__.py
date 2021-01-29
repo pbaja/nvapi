@@ -1,7 +1,7 @@
 import time
 import tkinter as tk
 
-from nvapi import NvidiaAPI
+from nvapi import NvidiaAPI, NvidiaError, NvidiaStatus
 from .window import Window
 
 class Application:
@@ -19,11 +19,33 @@ class Application:
 
         # Create window
         self.window = Window(self.root)
-        self.window.setGPUCount(len(self.gpus))
+        self.window.initPages([self.gpus[x].general.getFullName() for x in range(len(self.gpus))])
 
     def update(self):
         '''Update window values. As it grows it will be moved to a separate file.'''
-        pass
+        for x, gpu in enumerate(self.gpus):
+            page = self.window.gpu_pages[x]
+
+            # Clocks
+            perf_states = gpu.performance.getPerfStates()
+            page.setCoreClock(perf_states.pstates[0].clocks[0].data.range.maxFreq_kHz // 1000)
+            page.setMemoryClock(perf_states.pstates[0].clocks[1].data.range.maxFreq_kHz // 1000)
+
+            # Temperature
+            thermal = gpu.thermal.getThermalSettings()
+            if thermal.count > 0: page.setTemp(thermal.sensors[0].currentTemp)
+            
+            # Fan speed
+            try:
+                page.setFanSpeed(gpu.cooler.getTachReading())
+            except NvidiaError as e:
+                if e.status != NvidiaStatus.NOT_SUPPORTED:
+                    raise e
+
+            # Other
+            # page.setFanSpeed
+            # page.setFreeVRAM
+            page.setPerfState(gpu.performance.getPerfState())
 
     def run(self):
         '''Start (blocking) main loop'''
