@@ -84,7 +84,7 @@ if __name__ == '__main__':
     strings = []
     for gpu in gpus:
         # Grab info
-        gpu_name = gpu.getFullName()
+        gpu_name = gpu.general.getFullName()
         # Create tab frame
         frame = tk.Frame(tabs)
         tabs.add(frame, text=gpu_name)
@@ -103,10 +103,10 @@ if __name__ == '__main__':
                 timer = time.time()
                 for i, gpu in enumerate(gpus):
 
-                    states = gpu.getPerfStates()
+                    states = gpu.performance.getPerfStates()
                     strings[i][1].set(f'{states.pstates[0].clocks[0].data.range.maxFreq_kHz // 1000} Mhz')
                     strings[i][2].set(f'{states.pstates[0].clocks[1].data.range.maxFreq_kHz // 1000} Mhz')
-                    settings = gpu.getThermalSettings()
+                    settings = gpu.thermal.getThermalSettings()
                     if settings.count > 0: 
                         temp = settings.sensors[0].currentTemp
                         strings[i][3].set(f'{temp} °C')
@@ -117,7 +117,7 @@ if __name__ == '__main__':
 
                     #strings[i][4].set(f'')
                     #strings[i][5].set(f'')
-                    strings[i][6].set(f'P{gpu.getPerfState()}')
+                    strings[i][6].set(f'P{gpu.performance.getPerfState()}')
 
 
             # Update tkinter
