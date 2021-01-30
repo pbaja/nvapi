@@ -1,6 +1,6 @@
 import ctypes
 from ..enums import NvidiaPerfDecreaseReason, NvidiaClockFrequencyType
-from ..structs import NvidiaPerfStatesInfo, NvidiaClockFrequencies
+from nvapi.structs.performance import NvidiaPerfStatesInfo, NvidiaClockFrequencies
 
 # See: https://docs.nvidia.com/gameworks/content/gameworkslibrary/coresdk/nvapi/group__gpupstate.html
 

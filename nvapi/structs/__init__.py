@@ -28,7 +28,6 @@ class Structure(ctypes.Structure):
 
 # Structures
 
-from .performance import NvidiaPerfStatesInfo, NvidiaClockFrequencies
-from .thermal import NvidiaThermalSettings
-from .driver import NvidiaMemoryInfo
-from .cooler import NvidiaCoolerSettings
+# from .performance import NvidiaPerfStatesInfo, NvidiaClockFrequencies
+# from .thermal import NvidiaThermalSettings
+# from .driver import NvidiaMemoryInfo

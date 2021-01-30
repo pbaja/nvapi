@@ -1,5 +1,5 @@
 import ctypes
-from ..structs import NvidiaMemoryInfo
+from nvapi.structs.driver import NvidiaMemoryInfo
 
 class GPUDriverSettings:
     '''Wrapper class for getting and setting driver gpu settings and information'''

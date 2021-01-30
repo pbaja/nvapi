@@ -67,8 +67,8 @@ class InfoFrame(Frame):
         elif value > 90: text_color = 'red'
         elif value > 80: text_color = 'orange'
         self.row_labels[3].config(text=f'{value} °C', fg=text_color)
-    def setFanSpeed(self, value): 
-        self.row_labels[4].config(text=f'{value} RPM')
+    def setFanSpeed(self, rpm, level): 
+        self.row_labels[4].config(text=f'{level} % ({rpm} RPM)')
     def setFreeVRAM(self, value): 
         self.row_labels[5].config(text=f'{value} MB')
     def setPerfState(self, value): 

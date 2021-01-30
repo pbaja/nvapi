@@ -33,19 +33,26 @@ class NvidiaNativeAPI:
                 raise ApiError(f"Failed to load nvapi.dll: {e}")
 
         # Functions
-        self.GetErrorMessage            = self._wrap(0x6C2D048C, raiseErrors=False)
-        self.Initialize                 = self._wrap(0x0150E828)
-        self.GPU_GetFullName            = self._wrap(0xCEEE8E9F)
-        self.GetInterfaceVersionString  = self._wrap(0x01053FA5)
-        self.EnumPhysicalGPUs           = self._wrap(0xE5AC921F)
-        self.GPU_GetPstates20           = self._wrap(0x6FF81213)
-        self.GPU_SetPstates20           = self._wrap(0x0F4DAE6B)
-        self.GPU_GetThermalSettings     = self._wrap(0xE3640A56)
-        self.GPU_GetCurrentPstate       = self._wrap(0x927DA4F6)
-        self.GPU_GetTachReading         = self._wrap(0x5F608315)
-        self.GPU_GetMemoryInfo          = self._wrap(0x07F9B368)
-        self.GPU_GetAllClockFrequencies = self._wrap(0xDCB616C3)
-        self.GPU_EnableDynamicPstates   = self._wrap(0xFA579A0F)
+        self.GetErrorMessage                = self._wrap(0x6C2D048C, raiseErrors=False)
+        self.Initialize                     = self._wrap(0x0150E828)
+        self.Unload                         = self._wrap(0xD22BDD7E)
+        self.GPU_GetFullName                = self._wrap(0xCEEE8E9F)
+        self.GetInterfaceVersionString      = self._wrap(0x01053FA5)
+        self.EnumPhysicalGPUs               = self._wrap(0xE5AC921F)
+        self.GPU_GetPstates20               = self._wrap(0x6FF81213)
+        self.GPU_SetPstates20               = self._wrap(0x0F4DAE6B)
+        self.GPU_GetThermalSettings         = self._wrap(0xE3640A56)
+        self.GPU_GetCurrentPstate           = self._wrap(0x927DA4F6)
+        self.GPU_GetTachReading             = self._wrap(0x5F608315)
+        self.GPU_GetMemoryInfo              = self._wrap(0x07F9B368)
+        self.GPU_GetAllClockFrequencies     = self._wrap(0xDCB616C3)
+        self.GPU_EnableDynamicPstates       = self._wrap(0xFA579A0F)
+        self.GPU_GetCoolerSettings          = self._wrap(0xDA141340)
+
+        self.GPU_ClientFanCoolersGetInfo    = self._wrap(0xFB85B01E)
+        self.GPU_ClientFanCoolersGetStatus  = self._wrap(0x35AED5E8)
+        self.GPU_ClientFanCoolersGetControl = self._wrap(0x814B209F)
+        self.GPU_ClientFanCoolersSetControl = self._wrap(0xA58971A5)
 
     def _wrap(self, address, raiseErrors=True):
 
@@ -82,7 +89,7 @@ class NvidiaAPI:
         self.native.GetInterfaceVersionString(buf)
         self.version = buf.value.decode()
         if self.version != 'NVidia Complete Version 1.10':
-            raise NvidiaError(f'Untested library version: {self.version}')
+            raise ApiError(f'Untested library version: {self.version}')
 
     def dispose(self):
         self.native.Unload()

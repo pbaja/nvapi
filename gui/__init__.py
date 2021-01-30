@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import messagebox 
 
 from nvapi import NvidiaAPI, NvidiaError, NvidiaStatus, NvidiaClockDomain
+from nvapi.enums import NvidiaCoolersControlMode
 from .window import Window
 
 class Application:
@@ -12,6 +13,7 @@ class Application:
         self.root = tk.Tk()
         self.running = False
         self.last_update = 0.0
+        self._getFanMethod = 0
 
         # Initialize Nvidia API
         self.api = NvidiaAPI()
@@ -75,13 +77,33 @@ class Application:
             thermal = gpu.thermal.getThermalSettings()
             if thermal.count > 0: page.info.setTemp(thermal.sensors[0].currentTemp)
             
+            # Fan control
+            fanControl = gpu.cooler.getClientFanCoolersControl()
+            # fanControl.entries[0].level = 40
+            # fanControl.entries[0].controlMode = NvidiaCoolersControlMode.MANUAL
+            cooler = fanControl.entries[0]
+            print(f'level: {cooler.level} mode: {NvidiaCoolersControlMode(cooler.controlMode).name}')
+            # gpu.cooler.setClientFanCoolersControl(fanControl)
+
             # Fan speed
             try:
-                page.info.setFanSpeed(gpu.cooler.getTachReading())
+                if self._getFanMethod == 0:
+                    # This works on GTX cards
+                    page.info.setFanSpeed(gpu.cooler.getTachReading(), -1)
+                elif self._getFanMethod == 1:
+                    # This works on RTX cards
+                    fanStatus = gpu.cooler.getClientFanCoolersStatus()
+                    cooler = fanStatus.entries[0]
+                    page.info.setFanSpeed(cooler.currentRPM, cooler.currentLevel)
+                elif self._getFanMethod == 2:
+                    messagebox.showinfo('Failed to get FAN settings. Fan speed info will be not available.')
+                    self._getFanMethod = -1
             except NvidiaError as e:
                 if e.status != NvidiaStatus.NOT_SUPPORTED:
                     raise e
+                self._getFanMethod += 1
 
+            # Memory
             memory = gpu.driver.getMemoryInfo()
             page.info.setFreeVRAM(memory.curAvailableDedicatedVideoMemory // 1024)
 

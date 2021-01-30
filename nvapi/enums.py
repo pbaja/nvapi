@@ -47,6 +47,10 @@ class NvidiaThermalTarget(IntFlag):
 
 # Enums
 
+class NvidiaCoolersControlMode(IntEnum):
+    AUTO               = 0b00000000
+    MANUAL             = 0b00000001
+
 class NvidiaClockType(IntEnum):
     SINGLE             = 0b00000000 # Domains that use single frequency value within given pstate
     RANGE              = 0b00000001 # Domains that allow range of frequency values within given pstate

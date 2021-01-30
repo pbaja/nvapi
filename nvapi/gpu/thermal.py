@@ -1,6 +1,6 @@
 import ctypes
 from ..enums import NvidiaThermalTarget
-from ..structs import NvidiaThermalSettings
+from nvapi.structs.thermal import NvidiaThermalSettings
 
 
 class GPUThermalSettings:
