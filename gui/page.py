@@ -1,6 +1,6 @@
 import tkinter as tk
 
-from .frame import InfoFrame, TuneFrame
+from .frame import InfoFrame, FanFrame, TuneFrame
 from .constants import *
 
 
@@ -14,4 +14,5 @@ class GPUPage(Page):
     def __init__(self, parent):
         super().__init__(parent)
         self.info = InfoFrame(self.mainFrame)
+        self.fan = FanFrame(self.mainFrame)
         self.tune = TuneFrame(self.mainFrame)

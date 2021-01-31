@@ -12,8 +12,14 @@ class Window:
         # Setup window
         self.root = root
         self.root.tk_setPalette(background=COLOR_BG0, foreground=COLOR_TEXT, activeBackground=COLOR_BG0, activeForeground=COLOR_TEXT)
-        #self.root.geometry(WINDOW_SIZE)
         self.root.title(WINDOW_TITLE)
+
+        # Style
+        style = ttk.Style()
+        style.theme_use('default')
+        style.configure("TNotebook", background=COLOR_BG0, borderwidth=1)
+        style.configure("TNotebook.Tab", background=COLOR_BG0, foreground=COLOR_TEXT, borderwidth=0)
+        style.map("TNotebook.Tab", background=[("selected", COLOR_BG1)])
 
         # GPU pages
         self.gpu_pages_widget = ttk.Notebook(self.root)

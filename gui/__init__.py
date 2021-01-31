@@ -111,6 +111,10 @@ class Application:
             # page.info.setFanSpeed
             page.info.setPerfState(gpu.performance.getPerfState())
 
+    def updateGui(self):
+        self.root.update_idletasks()
+        self.root.update()
+
     def run(self):
         '''Start (blocking) main loop'''
         try:
@@ -123,8 +127,7 @@ class Application:
                     self.update()
 
                 # Update GUI
-                self.root.update_idletasks()
-                self.root.update()
+                self.updateGui()
 
         except tk.TclError:
             # Stop propagation

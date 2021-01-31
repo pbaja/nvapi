@@ -5,34 +5,57 @@ from .constants import *
 
 class Frame:
     
+    def __init__(self, parent):
+        self.frame = tk.Frame(parent)
+        self.frame.columnconfigure(0, weight=1)
+        self.frame.pack(anchor=tk.S, side=tk.LEFT, fill=tk.BOTH, padx=10, pady=10, expand=True)
+
+    def _validateEntry(self, value):
+        try:
+            if len(value) != 0:
+                int(value)
+            if len(value) > 1 and (value[0] == '0' or value[0] == ' ' or value[-1] == ' '):
+                return False
+            return True
+        except:
+            return False
+
     def _createTitle(self, parent, row, text):
-        label = tk.Label(parent, text=text, borderwidth=2, font=MAIN_FONT_BOLD, foreground=COLOR_TEXT_TITLE)
+        label = tk.Label(parent, text=text, borderwidth=2, font=MAIN_FONT_BOLD, background=COLOR_BG1, foreground=COLOR_TEXT_TITLE)
         label.columnconfigure(0, weight=1)
         label.grid(row=row, column=0, columnspan=2, sticky=tk.NSEW)
 
-    def __createLabel(self, parent, row, label):
+    def __createLabel(self, parent, row, text):
         # Label
-        label = tk.Label(parent, text=label, anchor=tk.W, font=MAIN_FONT)
+        label = tk.Label(parent, text=text, anchor=tk.W, font=MAIN_FONT)
         label.columnconfigure(0, weight=0)
         label.grid(row=row, column=0, sticky=tk.NSEW)
 
-    def _createTextRow(self, parent, row, label):
-        self.__createLabel(parent, row, label)
+    def _createTextRow(self, row, label):
+        self.__createLabel(self.frame, row, label)
         # Text
-        text = tk.Label(parent, text='-', font=MAIN_FONT)
+        text = tk.Label(self.frame, text='-', font=MAIN_FONT)
         text.columnconfigure(0, weight=1)
         text.grid(row=row, column=1, sticky=tk.NSEW)
         return text
 
-    def _createEntryRow(self, parent, row, label, validate=None):
-        self.__createLabel(parent, row, label)
+    def _createEntryRow(self, row, label, validate=None):
+        self.__createLabel(self.frame, row, label)
         # Entry
-        entry = tk.Entry(parent, width=5, validate='all', font=MAIN_FONT)
+        entry = tk.Entry(self.frame, width=5, validate='all', font=MAIN_FONT)
         entry.columnconfigure(0, weight=1)
         entry.grid(row=row, column=1, pady=5, padx=50, sticky=tk.NSEW)
         entry.insert(0, '-')
-        entry.config(validatecommand=(parent.register(validate), '%P'))
+        entry.config(validatecommand=(self.frame.register(validate), '%P'))
         return entry
+
+    def _createOptionRow(self, row, label, defaultOption, options):
+        self.__createLabel(self.frame, row, label)
+        variable = tk.StringVar(self.frame)
+        variable.set(options[defaultOption])
+        option = tk.OptionMenu(self.frame, variable, *options)
+        option.grid(row=row, column=1, sticky=tk.NSEW)
+        return variable
 
     def _createCheckboxRow(self, parent, row, label):
         self.__createLabel(parent, row, label)
@@ -42,18 +65,17 @@ class Frame:
         check.grid(row=row, column=1, sticky=tk.NSEW)
         return var
 
+
 class InfoFrame(Frame):
 
     def __init__(self, parent):
-        # Create frame
-        infoFrame = tk.Frame(parent)
-        infoFrame.columnconfigure(0, weight=1)
-        infoFrame.pack(anchor=tk.N, fill=tk.BOTH, expand=False)
+        super().__init__(parent)
+
         # Add widgets
         self.row_labels = []
-        self._createTitle(infoFrame, 0, 'Info')
+        self._createTitle(self.frame, 0, 'Info')
         for i, row_name in enumerate(['Name', 'Core clock', 'Memory clock', 'Temp', 'Fan speed', 'Free VRAM', 'Perf state']):
-            self.row_labels.append(self._createTextRow(infoFrame, i+1, row_name))
+            self.row_labels.append(self._createTextRow(i+1, row_name))
 
     def setName(self, value):
         self.row_labels[0].config(text=value)
@@ -74,23 +96,31 @@ class InfoFrame(Frame):
     def setPerfState(self, value): 
         self.row_labels[6].config(text=f'P{value}')
 
+
+class FanFrame(Frame):
+
+    def __init__(self, parent):
+        super().__init__(parent)
+
+        # Add widgets
+        self._createTitle(self.frame, 0, 'Fan Control')
+        self._createOptionRow(1, 'Mode', 0, ['Auto', 'Manual'])
+        self._createEntryRow(4, 'Speed', self._validateEntry)
+
 class TuneFrame(Frame):
 
     def __init__(self, parent):
-        # Create frame
-        infoFrame = tk.Frame(parent)
-        infoFrame.columnconfigure(0, weight=1)
-        infoFrame.pack(anchor=tk.N, fill=tk.BOTH, expand=False)
+        super().__init__(parent)
+
         # Add widgets
-        self.row_entries = []
-        self._createTitle(infoFrame, 0, 'Tune')
-        self._coreTargetRow = self._createTextRow(infoFrame, 1, 'Core target')
-        self._coreOffsetRow = self._createEntryRow(infoFrame, 2, 'Core offset', self._validateEntry)
-        self._memoryTargetRow = self._createTextRow(infoFrame, 3, 'Memory target')
-        self._memoryOffsetRow = self._createEntryRow(infoFrame, 4, 'Memory offset', self._validateEntry)
-        self._forceStateRow = self._createCheckboxRow(infoFrame, 5, 'Force P0 state')
+        self._createTitle(self.frame, 0, 'Tune')
+        self._coreTargetRow = self._createTextRow(1, 'Core target')
+        self._coreOffsetRow = self._createEntryRow(2, 'Core offset', self._validateEntry)
+        self._memoryTargetRow = self._createTextRow(3, 'Memory target')
+        self._memoryOffsetRow = self._createEntryRow(4, 'Memory offset', self._validateEntry)
+        self._forceStateRow = self._createCheckboxRow(self.frame, 5, 'Force P0 state')
         # Add button
-        btn = tk.Button(infoFrame, text="Apply", command=self._apply)
+        btn = tk.Button(self.frame, text="Apply", command=self._apply)
         btn.grid(row=6, column=0, columnspan=2, sticky=tk.NSEW)
         self.onApplyClicked = lambda *args: print(f'Apply: {args}')
 
@@ -99,16 +129,6 @@ class TuneFrame(Frame):
         memoryOffset = int(self._memoryOffsetRow.get())
         forceP0 = self._forceStateRow.get()
         self.onApplyClicked(coreOffset, memoryOffset, forceP0)
-
-    def _validateEntry(self, value):
-        try:
-            if len(value) != 0:
-                int(value)
-            if len(value) > 1 and (value[0] == '0' or value[0] == ' ' or value[-1] == ' '):
-                return False
-            return True
-        except:
-            return False
 
     def setCoreClock(self, value): 
         self._coreTargetRow.config(text=f'{value} Mhz')
