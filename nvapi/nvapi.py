@@ -1,5 +1,6 @@
 import ctypes
 from _ctypes import CFuncPtr
+from typing import List
 
 from .gpu import PhysicalGPU
 from .constants import *
@@ -43,7 +44,8 @@ class NvidiaNativeAPI:
         self.GPU_SetPstates20               = self._wrap(0x0F4DAE6B)
         self.GPU_GetThermalSettings         = self._wrap(0xE3640A56)
         self.GPU_GetCurrentPstate           = self._wrap(0x927DA4F6)
-        self.GPU_GetTachReading             = self._wrap(0x5F608315)
+        self.GPU_GetTachReading             = self._wrap(0x5F608315) # Up to GTX 1XXX
+        self.GPU_GetCurrentFanSpeedLevel    = self._wrap(0xBD71F0C9) # Not supported
         self.GPU_GetMemoryInfo              = self._wrap(0x07F9B368)
         self.GPU_GetAllClockFrequencies     = self._wrap(0xDCB616C3)
         self.GPU_EnableDynamicPstates       = self._wrap(0xFA579A0F)
@@ -103,7 +105,7 @@ class NvidiaAPI:
         self.native.SYS_GetDriverAndBranchVersion(ctypes.byref(ver), buf)
         return {'driver': ver.value / 100.0, 'branch': buf.value.decode()}
 
-    def getPhysicalGPUs(self):
+    def getPhysicalGPUs(self) -> List[PhysicalGPU]:
         handles = (ctypes.c_void_p * NVAPI_MAX_PHYSICAL_GPUS)()
         count = ctypes.c_uint32()
         self.native.EnumPhysicalGPUs(ctypes.byref(handles), ctypes.byref(count))

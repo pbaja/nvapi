@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 
 from .frame import InfoFrame, FanFrame, TuneFrame
 from .constants import *
@@ -7,7 +8,7 @@ from .constants import *
 class Page:
     '''Common class for pages in application window'''
     def __init__(self, parent):
-        self.mainFrame = tk.Frame(parent)
+        self.mainFrame = ttk.Frame(parent)
 
 class GPUPage(Page):
     '''Page representing current state of specific GPU'''

@@ -256,7 +256,6 @@ address_map = {
     'GPU_GetConnectorInfo': 0x4ECA2C10,
     'GPU_GetCoolerPolicyTable': 0x518A32C,
     'GPU_GetCurrentAGPRate': 0xC74925A0,
-    'GPU_GetCurrentFanSpeedLevel': 0xBD71F0C9,
     'GPU_GetCurrentPCIEDownstreamWidth': 0xD048C3B1,
     'GPU_GetCurrentThermalLevel': 0xD2488B79,
     'GPU_GetDeviceDisplayMode': 0xD2277E3A,

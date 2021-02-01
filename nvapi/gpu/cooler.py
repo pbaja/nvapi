@@ -17,7 +17,7 @@ class GPUCoolerSettings:
         return reading.value
 
     def getCoolerSettings(self, target:NvidiaCoolerTarget=None) -> NvidiaCoolerSettings:
-        '''Returns structure with cooler settings for specified target. All targets will be retrieved if not specified.'''
+        '''Returns structure with cooler settings for specified target. All targets will be retrieved if not specified. Supported only up to GTX 1XXX.'''
         struct = NvidiaCoolerSettings()
         struct.version = ctypes.sizeof(NvidiaCoolerSettings) | (1 << 16) #V1
         if target is None: target = NvidiaCoolerTarget.ALL

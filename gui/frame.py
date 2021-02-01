@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 
 from .constants import *
 
@@ -6,7 +7,7 @@ from .constants import *
 class Frame:
     
     def __init__(self, parent):
-        self.frame = tk.Frame(parent)
+        self.frame = ttk.Frame(parent)
         self.frame.columnconfigure(0, weight=1)
         self.frame.pack(anchor=tk.S, side=tk.LEFT, fill=tk.BOTH, padx=10, pady=10, expand=True)
 
@@ -21,20 +22,20 @@ class Frame:
             return False
 
     def _createTitle(self, parent, row, text):
-        label = tk.Label(parent, text=text, borderwidth=2, font=MAIN_FONT_BOLD, background=COLOR_BG1, foreground=COLOR_TEXT_TITLE)
-        label.columnconfigure(0, weight=1)
+        label = ttk.Label(parent, text=text)
+        label.columnconfigure(0, weight=2)
         label.grid(row=row, column=0, columnspan=2, sticky=tk.NSEW)
 
     def __createLabel(self, parent, row, text):
         # Label
-        label = tk.Label(parent, text=text, anchor=tk.W, font=MAIN_FONT)
+        label = ttk.Label(parent, text=text, anchor=tk.W)
         label.columnconfigure(0, weight=0)
         label.grid(row=row, column=0, sticky=tk.NSEW)
 
     def _createTextRow(self, row, label):
         self.__createLabel(self.frame, row, label)
         # Text
-        text = tk.Label(self.frame, text='-', font=MAIN_FONT)
+        text = ttk.Label(self.frame, text='-')
         text.columnconfigure(0, weight=1)
         text.grid(row=row, column=1, sticky=tk.NSEW)
         return text
@@ -42,9 +43,9 @@ class Frame:
     def _createEntryRow(self, row, label, validate=None):
         self.__createLabel(self.frame, row, label)
         # Entry
-        entry = tk.Entry(self.frame, width=5, validate='all', font=MAIN_FONT)
+        entry = tk.Entry(self.frame, validate='all')
         entry.columnconfigure(0, weight=1)
-        entry.grid(row=row, column=1, pady=5, padx=50, sticky=tk.NSEW)
+        entry.grid(row=row, column=1, sticky=tk.E)
         entry.insert(0, '-')
         entry.config(validatecommand=(self.frame.register(validate), '%P'))
         return entry
@@ -53,16 +54,16 @@ class Frame:
         self.__createLabel(self.frame, row, label)
         variable = tk.StringVar(self.frame)
         variable.set(options[defaultOption])
-        option = tk.OptionMenu(self.frame, variable, *options)
-        option.grid(row=row, column=1, sticky=tk.NSEW)
+        option = ttk.OptionMenu(self.frame, variable, *options)
+        option.grid(row=row, column=1, sticky=tk.E)
         return variable
 
     def _createCheckboxRow(self, parent, row, label):
         self.__createLabel(parent, row, label)
         # Checkbox
         var = tk.BooleanVar()
-        check = tk.Checkbutton(parent, variable=var, selectcolor=COLOR_BG0)
-        check.grid(row=row, column=1, sticky=tk.NSEW)
+        check = ttk.Checkbutton(parent, text='asd', variable=var)
+        check.grid(row=row, column=1, sticky=tk.E)
         return var
 
 
@@ -88,9 +89,13 @@ class InfoFrame(Frame):
         if value < 20: text_color = 'cyan'
         elif value > 90: text_color = 'red'
         elif value > 80: text_color = 'orange'
-        self.row_labels[3].config(text=f'{value} °C', fg=text_color)
+        self.row_labels[3].config(text=f'{value} °C', foreground=text_color)
     def setFanSpeed(self, rpm, level): 
-        self.row_labels[4].config(text=f'{level} % ({rpm} RPM)')
+        fan_str = '?'
+        if rpm == -1: fan_str = f'{level} %'
+        elif level == -1: fan_str = f'{rpm} RPM'
+        else: fan_str = f'{level} % ({rpm} RPM)'
+        self.row_labels[4].config(text=fan_str)
     def setFreeVRAM(self, value): 
         self.row_labels[5].config(text=f'{value} MB')
     def setPerfState(self, value): 
@@ -120,7 +125,7 @@ class TuneFrame(Frame):
         self._memoryOffsetRow = self._createEntryRow(4, 'Memory offset', self._validateEntry)
         self._forceStateRow = self._createCheckboxRow(self.frame, 5, 'Force P0 state')
         # Add button
-        btn = tk.Button(self.frame, text="Apply", command=self._apply)
+        btn = ttk.Button(self.frame, text="Apply", command=self._apply)
         btn.grid(row=6, column=0, columnspan=2, sticky=tk.NSEW)
         self.onApplyClicked = lambda *args: print(f'Apply: {args}')
 
