@@ -29,6 +29,9 @@ class Application:
         for idx, page in enumerate(self.window.gpu_pages):
             page.tune.onApplyClicked = lambda *args: self._applyClicked(idx, *args)
 
+        self.updateGui()
+        self.root.minsize(width=self.root.winfo_width(), height=self.root.winfo_height())
+
     def _init(self):
         '''Initialize constant window values'''
         for x, gpu in enumerate(self.gpus):

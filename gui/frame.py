@@ -23,20 +23,20 @@ class Frame:
     def _createTitle(self, parent, row, text):
         label = tk.Label(parent, text=text, borderwidth=2, font=MAIN_FONT_BOLD, background=COLOR_BG1, foreground=COLOR_TEXT_TITLE)
         label.columnconfigure(0, weight=1)
-        label.grid(row=row, column=0, columnspan=2, sticky=tk.NSEW)
+        label.grid(row=row, column=0, pady=5, columnspan=2, sticky=tk.NSEW)
 
     def __createLabel(self, parent, row, text):
         # Label
         label = tk.Label(parent, text=text, anchor=tk.W, font=MAIN_FONT)
         label.columnconfigure(0, weight=0)
-        label.grid(row=row, column=0, sticky=tk.NSEW)
+        label.grid(row=row, column=0, padx=5, sticky=tk.NSEW)
 
     def _createTextRow(self, row, label):
         self.__createLabel(self.frame, row, label)
         # Text
-        text = tk.Label(self.frame, text='-', font=MAIN_FONT)
+        text = tk.Label(self.frame, text='-', anchor=tk.E, font=MAIN_FONT)
         text.columnconfigure(0, weight=1)
-        text.grid(row=row, column=1, sticky=tk.NSEW)
+        text.grid(row=row, column=1, padx=5, sticky=tk.E)
         return text
 
     def _createEntryRow(self, row, label, validate=None):
@@ -44,8 +44,9 @@ class Frame:
         # Entry
         entry = tk.Entry(self.frame, width=5, validate='all', font=MAIN_FONT)
         entry.columnconfigure(0, weight=1)
-        entry.grid(row=row, column=1, pady=5, padx=50, sticky=tk.NSEW)
+        entry.grid(row=row, column=1, padx=5, sticky=tk.E)
         entry.insert(0, '-')
+        entry.config(bg=COLOR_BG1, borderwidth=0)
         entry.config(validatecommand=(self.frame.register(validate), '%P'))
         return entry
 
@@ -54,7 +55,8 @@ class Frame:
         variable = tk.StringVar(self.frame)
         variable.set(options[defaultOption])
         option = tk.OptionMenu(self.frame, variable, *options)
-        option.grid(row=row, column=1, sticky=tk.NSEW)
+        option.config(bg=COLOR_BG1, activebackground=COLOR_BG1, borderwidth=0)
+        option.grid(row=row, column=1, sticky=tk.E)
         return variable
 
     def _createCheckboxRow(self, parent, row, label):
@@ -62,7 +64,7 @@ class Frame:
         # Checkbox
         var = tk.BooleanVar()
         check = tk.Checkbutton(parent, variable=var, selectcolor=COLOR_BG0)
-        check.grid(row=row, column=1, sticky=tk.NSEW)
+        check.grid(row=row, column=1, sticky=tk.E)
         return var
 
 

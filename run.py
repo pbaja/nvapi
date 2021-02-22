@@ -9,7 +9,6 @@ if __name__ == '__main__':
 
     # Check if we are running as administrator
     if ctypes.windll.shell32.IsUserAnAdmin() == 0:
-        app.updateGui()
         result = messagebox.askyesno("Insufficient privileges", "Administrator rights are required to apply clock offsets. \nDo you want to restart as administrator?") 
         if result:
             ctypes.windll.shell32.ShellExecuteW(None, 'runas', sys.executable, ' '.join(sys.argv), None, None)
