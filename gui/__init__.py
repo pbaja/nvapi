@@ -42,6 +42,13 @@ class Application:
             page.tune.setCoreOffset(perf_states.pstates[0].clocks[0].freqDelta_kHz.value // 1000)
             page.tune.setMemoryOffset(perf_states.pstates[0].clocks[1].freqDelta_kHz.value // 1000)
 
+            # Fan
+            fanControl = gpu.cooler.getClientFanCoolersControl()
+            cooler = fanControl.entries[0]
+            page.fan.setFanMode(NvidiaCoolersControlMode(cooler.controlMode))
+            page.fan.setFanSpeed(cooler.level)
+
+
     def _applyClicked(self, gpuidx, coreOffset, memoryOffset, forceP0):
         '''Apply tuning'''
         gpu = self.gpus[gpuidx]
@@ -81,11 +88,11 @@ class Application:
             if thermal.count > 0: page.info.setTemp(thermal.sensors[0].currentTemp)
             
             # Fan control
-            fanControl = gpu.cooler.getClientFanCoolersControl()
+            #fanControl = gpu.cooler.getClientFanCoolersControl()
             # fanControl.entries[0].level = 40
             # fanControl.entries[0].controlMode = NvidiaCoolersControlMode.MANUAL
-            cooler = fanControl.entries[0]
-            print(f'level: {cooler.level} mode: {NvidiaCoolersControlMode(cooler.controlMode).name}')
+            # cooler = fanControl.entries[0]
+            # print(f'level: {cooler.level} mode: {NvidiaCoolersControlMode(cooler.controlMode).name}')
             # gpu.cooler.setClientFanCoolersControl(fanControl)
 
             # Fan speed

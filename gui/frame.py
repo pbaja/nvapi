@@ -1,7 +1,6 @@
 import tkinter as tk
-
 from .constants import *
-
+from nvapi.enums import NvidiaCoolersControlMode
 
 class Frame:
     
@@ -52,8 +51,8 @@ class Frame:
 
     def _createOptionRow(self, row, label, defaultOption, options):
         self.__createLabel(self.frame, row, label)
-        variable = tk.StringVar(self.frame)
-        variable.set(options[defaultOption])
+        variable = tk.IntVar(self.frame)
+        variable.set(defaultOption)
         option = tk.OptionMenu(self.frame, variable, *options)
         option.config(bg=COLOR_BG1, activebackground=COLOR_BG1, borderwidth=0)
         option.grid(row=row, column=1, sticky=tk.E)
@@ -106,8 +105,18 @@ class FanFrame(Frame):
 
         # Add widgets
         self._createTitle(self.frame, 0, 'Fan Control')
-        self._createOptionRow(1, 'Mode', 0, ['Auto', 'Manual'])
-        self._createEntryRow(4, 'Speed', self._validateEntry)
+        self._modeRowOptions = ['Auto', 'Manual']
+        self._modeRow = self._createOptionRow(1, 'Mode', 0, self._modeRowOptions)
+        self._speedRow = self._createEntryRow(4, 'Speed', self._validateEntry)
+
+    def setFanMode(self, mode:NvidiaCoolersControlMode):
+        idx = int(mode)
+        self._modeRow.set(self._modeRowOptions[idx])
+    
+    def setFanSpeed(self, speed:int):
+        self._speedRow.delete(0, tk.END)
+        self._speedRow.insert(0, str(speed))
+
 
 class TuneFrame(Frame):
 
@@ -132,14 +141,14 @@ class TuneFrame(Frame):
         forceP0 = self._forceStateRow.get()
         self.onApplyClicked(coreOffset, memoryOffset, forceP0)
 
-    def setCoreClock(self, value): 
+    def setCoreClock(self, value:int): 
         self._coreTargetRow.config(text=f'{value} Mhz')
-    def setMemoryClock(self, value): 
+    def setMemoryClock(self, value:int): 
         self._memoryTargetRow.config(text=f'{value} Mhz')
 
-    def setCoreOffset(self, value):
+    def setCoreOffset(self, value:int):
         self._coreOffsetRow.delete(0, tk.END)
         self._coreOffsetRow.insert(0, str(value))
-    def setMemoryOffset(self, value):
+    def setMemoryOffset(self, value:int):
         self._memoryOffsetRow.delete(0, tk.END)
         self._memoryOffsetRow.insert(0, str(value))
