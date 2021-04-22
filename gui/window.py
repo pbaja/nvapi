@@ -91,3 +91,8 @@ class Window:
                 page.info.setName(name)
                 self.gpu_pages_widget.add(page.mainFrame, text=names[x])
                 self.gpu_pages.append(page)
+
+        # Set min size
+        self.root.minsize(100, 100)
+        print(self.root.winfo_height())
+        print(self.root.winfo_width())
