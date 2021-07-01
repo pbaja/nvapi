@@ -67,9 +67,16 @@ class NvidiaNativeAPI:
 
     def _wrap(self, address, raiseErrors=True):
 
+        # Access violation workaround
+        # THIS IS BAD. 
+        # TOOD: Explore more. Test with more devices. Find out what is happening.
+        paddr = self.api.nvapi_QueryInterface(0x0150E828)
+        faddr = ctypes.cast(self.api.nvapi_QueryInterface, ctypes.c_void_p).value
+        offset = (faddr-paddr) & 0xFFFF00000000
+
         # Get function from pointer
         pointer = self.api.nvapi_QueryInterface(address)
-        native_function = NvidiaFuncPtr(pointer + 0x7ffb00000000) # Adding this offset fixes access violation error
+        native_function = NvidiaFuncPtr(pointer + offset)
 
         # Just return native function if we do not want to catch errors
         if not raiseErrors:
