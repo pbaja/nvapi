@@ -13,12 +13,15 @@ class NvidiaError(Exception):
         super().__init__(msg)
         self.status = status
 
+
 class ApiError(Exception):
     pass
+
 
 class NvidiaFuncPtr(CFuncPtr):
     _flags_ = ctypes._FUNCFLAG_CDECL
     _restype_ = ctypes.c_int
+
 
 class NvidiaNativeAPI:
 
@@ -26,10 +29,10 @@ class NvidiaNativeAPI:
 
         # Load DLL
         try:
-            self.api = ctypes.cdll.LoadLibrary('nvapi.dll')
+            self.api = ctypes.cdll.LoadLibrary('nvapi64.dll')
         except: 
             try:
-                self.api = ctypes.cdll.LoadLibrary('nvapi64.dll')
+                self.api = ctypes.cdll.LoadLibrary('nvapi.dll')
             except Exception as e:
                 raise ApiError(f"Failed to load nvapi.dll: {e}")
 
@@ -50,6 +53,12 @@ class NvidiaNativeAPI:
         self.GPU_GetAllClockFrequencies     = self._wrap(0xDCB616C3)
         self.GPU_EnableDynamicPstates       = self._wrap(0xFA579A0F)
         self.GPU_GetCoolerSettings          = self._wrap(0xDA141340)
+        self.GPU_GetGpuCoreCount            = self._wrap(0xC7026A87)
+        self.GPU_GetVbiosVersionString      = self._wrap(0xA561FD7D)
+        self.GPU_GetVbiosRevision           = self._wrap(0xACC3DA0A)
+        self.GPU_GetVbiosOEMRevision        = self._wrap(0x2D43FB31)
+        self.GPU_GetBusId                   = self._wrap(0x1BE0B8E5)
+        self.GPU_GetBusSlotId               = self._wrap(0x2A0A350F)
 
         self.GPU_ClientFanCoolersGetInfo    = self._wrap(0xFB85B01E)
         self.GPU_ClientFanCoolersGetStatus  = self._wrap(0x35AED5E8)
@@ -60,7 +69,7 @@ class NvidiaNativeAPI:
 
         # Get function from pointer
         pointer = self.api.nvapi_QueryInterface(address)
-        native_function = NvidiaFuncPtr(pointer)
+        native_function = NvidiaFuncPtr(pointer + 0x7ffb00000000) # Adding this offset fixes access violation error
 
         # Just return native function if we do not want to catch errors
         if not raiseErrors:
@@ -79,11 +88,14 @@ class NvidiaNativeAPI:
 
 class NvidiaAPI:
 
-    def __init__(self, verbose=False):
+    def __init__(self, initialize=True):
         self.native = NvidiaNativeAPI()
+        self.initialize()
 
-    def init(self):
-        # Try to initialize
+    def initialize(self):
+        """Initializes Nvidia API. Must be called before all other functions. Can throw NvidiaError or ApiError, returns nothing."""
+
+        # Try to initialize native API
         self.native.Initialize()
 
         # Confirm interface version
@@ -94,18 +106,22 @@ class NvidiaAPI:
             raise ApiError(f'Untested library version: {self.version}')
 
     def dispose(self):
+        """Disposes Nvidia API."""
         self.native.Unload()
 
-    def getInterfaceVersion(self):
+    def interface_version(self):
+        """Returns nvapi version"""
         return self.version
 
-    def getDriverVersion(self):
+    def driver_version(self):
+        """Returns dictionary with driver version"""
         buf = ctypes.create_string_buffer(NVAPI_SHORT_STRING_MAX)
         ver = ctypes.c_uint32()
         self.native.SYS_GetDriverAndBranchVersion(ctypes.byref(ver), buf)
         return {'driver': ver.value / 100.0, 'branch': buf.value.decode()}
 
-    def getPhysicalGPUs(self) -> List[PhysicalGPU]:
+    def list_gpus(self) -> List[PhysicalGPU]:
+        """Lists all installed Nvidia GPUs in the system"""
         handles = (ctypes.c_void_p * NVAPI_MAX_PHYSICAL_GPUS)()
         count = ctypes.c_uint32()
         self.native.EnumPhysicalGPUs(ctypes.byref(handles), ctypes.byref(count))

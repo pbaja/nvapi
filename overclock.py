@@ -1,48 +1,49 @@
-from nvapi import NvidiaAPI, NvidiaClockDomain, NvidiaClockType
+import sys
+from nvapi import NvidiaAPI, NvidiaError, NvidiaStatus
 
-# Load DLL and Initialize
-api = NvidiaAPI(verbose=True)
-api.init()
+# Load and initialize API
+api = NvidiaAPI()
 
-def sign_char(value):
-    return '+' if value >= 0 else ''
-def pstate_val(idx, curr):
-    return f'[P{idx}]' if idx == curr else f'P{idx}'
+# Get GPU0
+gpu = api.list_gpus()[0]
+print(f'Targeting {gpu.general.full_name()}')
 
-# List GPUs
-gpus = api.getPhysicalGPUs()
-def printInfo():
-    print('-----------------------')
-    for idx, gpu in enumerate(gpus):
-        name = gpu.getFullName()
-        states = gpu.getPerfStates()
-        state = gpu.getPerfState()
-        
-        print(f'GPU{idx}: {name}')
+# Print clocks
+states = gpu.performance.perf_states()
+core_current = states.pstates[0].clocks[0].data.range.maxFreq_kHz // 1000
+core_offset = states.pstates[0].clocks[0].freqDelta_kHz.value // 1000
+print(f'Core P0 Clock: {core_current} Mhz, offset: {core_offset} Mhz')
 
-        pstate_str = ' '.join([pstate_val(x, state) for x in range(13)])
-        print(f' - Pstate: {pstate_str}')
+if core_offset == 50:
+    print('Already overclocked!')
+    sys.exit(0)
 
-        core_curr = states.pstates[0].clocks[0].data.range.maxFreq_kHz // 1000
-        core_offs = states.pstates[0].clocks[0].freqDelta_kHz.value // 1000
-        print(f' - Core: {core_curr}Mhz {sign_char(core_offs)}{core_offs}Mhz')
+# Add 50Mhz offset to overclock (reusing states struct obtained earlier)
+states.pstates[0].clocks[0].freqDelta_kHz.value = 50 * 1000 # 50Mhz offset on first pstate slot, first clock slot. It already has set ClockDomain as GRAPHICS
+states.numPstates = 1 # We are changing one Pstate
+states.numClocks = 1 # We are changing one clock
+states.numBaseVoltages = 0 # We are not changing any base voltages
 
-        mem_curr = states.pstates[0].clocks[1].data.range.maxFreq_kHz // 1000
-        mem_offs = states.pstates[0].clocks[1].freqDelta_kHz.value // 1000
-        print(f' - Mem: {mem_curr}Mhz {sign_char(mem_offs)}{mem_offs}Mhz')
-    print('-----------------------')
+# Apply changed clocks
+print('Overclocking +50Mhz')
+try:
+    gpu.performance.set_perf_states(states)
+except NvidiaError as e:
+    if e.status == NvidiaStatus.INVALID_USER_PRIVILEGE:
+        print('Error! Overclocking is available only for administrators. Try again with admin rights.')
+        sys.exit(0)
+    else:
+        raise e
 
+# Print clocks again
+states = gpu.performance.perf_states()
+oc_core_current = states.pstates[0].clocks[0].data.range.maxFreq_kHz // 1000
+oc_core_offset = states.pstates[0].clocks[0].freqDelta_kHz.value // 1000
+print(f'Core P0 Clock: {oc_core_current} Mhz, offset: {oc_core_offset} Mhz')
 
-printInfo()
-print('Will overclock GPU0 Core by 50Mhz')
-struct = gpus[0].getPerfStates()
-struct.pstates[0].clocks[0].freqDelta_kHz.value = 0 * 1000
-struct.numPstates = 1
-struct.numClocks = 1
-struct.numBaseVoltages = 0
-gpus[0].setPerfStates(struct)
-print('Done')
-printInfo()
+# Check
+if oc_core_current == core_current + 50:
+    print('Success!')
 
 # Done
 api.dispose()

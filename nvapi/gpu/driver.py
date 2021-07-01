@@ -7,7 +7,7 @@ class GPUDriverSettings:
     def __init__(self, gpu):
         self._gpu = gpu
 
-    def getMemoryInfo(self):
+    def memory_info(self):
         # Get info
         struct = NvidiaMemoryInfo()
         struct.version = ctypes.sizeof(NvidiaMemoryInfo) | (3 << 16) #V3

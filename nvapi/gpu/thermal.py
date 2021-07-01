@@ -9,7 +9,7 @@ class GPUThermalSettings:
     def __init__(self, gpu):
         self._gpu = gpu
 
-    def getThermalSettings(self, sensorIdx=None):
+    def thermal_settings(self, sensorIdx=None):
         # Get info
         struct = NvidiaThermalSettings()
         struct.version = ctypes.sizeof(NvidiaThermalSettings) | (2 << 16) #V2

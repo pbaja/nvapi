@@ -21,3 +21,6 @@ class PhysicalGPU:
         self.cooler = GPUCoolerSettings(self)
         self.driver = GPUDriverSettings(self)
         self.thermal = GPUThermalSettings(self)
+
+    def __repr__(self):
+        return f"<PhysicalGPU {self.general.full_name()}>"
