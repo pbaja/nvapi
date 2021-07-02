@@ -16,17 +16,25 @@ for idx, gpu in enumerate(gpus):
     print(f' - BIOS OEM Revision: {gpu.general.bios_oem_revision()}')
     print(f' - Bus ID: {gpu.general.bus_id()}')
     print(f' - Bus Slot ID: {gpu.general.bus_slot_id()}')
-    
-    # Iterate over pstates
     print(f' - Current state: P{gpu.performance.perf_state()}')
-    states = gpu.performance.perf_states()
-    for state in states.pstates[:states.numPstates]:
-        # Iterate over clocks
-        for clock in state.clocks[:states.numClocks]:
-            domain = NvidiaClockDomain(clock.domainId)
-            current = clock.data.range.maxFreq_kHz // 1000
-            offset = clock.freqDelta_kHz.value // 1000
-            print(f' - P{state.pStateId} {domain.name.title()} Clock: {current} Mhz, offset: {offset} Mhz')
+
+    # Performance states
+    info = gpu.performance.perf_states_info()
+    for state in info.pstates:
+
+        # Clocks in this pstate
+        for clock in state.clocks:
+            print(f' - {state.id.name} {clock.domain.name.title()} Clock: {clock.max} Mhz, offset: {clock.offset.value} Mhz, editable: {clock.is_editable}')
+
+        # Base voltages in this pstate
+        for bv in state.base_voltages:
+            print(f' - {bv.domain.name} Voltage: {bv.voltage} V, offset: {bv.voltage_offset.value} V, offset range: {bv.voltage_offset.min} - {bv.voltage_offset.max}')
+
+    # Thermal settings
+    thermal = gpu.thermal.thermal_settings()
+    for sensor in thermal.sensors:
+        print(f' - Sensor {sensor.controller.name} Temp: {sensor.current} C, min: {sensor.min} C, max: {sensor.max} C, target: {sensor.target.name}')
+
 
 # Dispose
 api.dispose()

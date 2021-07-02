@@ -19,13 +19,14 @@ class GPUPerformanceSettings:
     def dynamic_perf_state_info(self):
         raise NotImplementedError() # GPU_GetDynamicPstatesInfoEx
 
-    def perf_states(self) -> NvidiaPerfStatesInfo:
+    def perf_states_info(self) -> NvidiaPerfStatesInfo:
         struct = NvidiaPerfStatesInfo()
         struct.version = ctypes.sizeof(NvidiaPerfStatesInfo) | (2 << 16) #V2
         self._gpu.native.GPU_GetPstates20(self._gpu.handle, ctypes.byref(struct))
         return struct
 
     def enable_dynamic_perf_states(self, enabled):
+        '''If set to false, prevents GPU from changing Pstate'''
         self._gpu.native.GPU_EnableDynamicPstates(self._gpu.handle, 0 if enabled else 1)
 
     def set_perf_states(self, struct):
@@ -36,7 +37,7 @@ class GPUPerformanceSettings:
         self._gpu.native.GPU_GetPerfDecreaseInfo(self._gpu.handle, ctypes.byref(info))
         return NvidiaPerfDecreaseReason(info.value)
 
-    def all_clock_frequencies(self, clockType=None):
+    def all_clock_frequencies(self, clockType=None) -> NvidiaClockFrequencies:
         struct = NvidiaClockFrequencies()
         struct.version = ctypes.sizeof(NvidiaClockFrequencies) | (2 << 16) #V2
         struct.clockType = NvidiaClockFrequencyType.CURRENT_FREQ if clockType is None else clockType

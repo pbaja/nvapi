@@ -60,6 +60,30 @@ class NvidiaClockFrequencyType(IntEnum): # NV_GPU_CLOCK_FREQUENCIES_CLOCK_TYPE
     BASE_CLOCK   = 1
     BOOST_CLOCK  = 2
 
+class NvidiaVoltageInfoDomainId(IntEnum):
+    Core = 0
+    Undefined = 1
+
+class NvidiaPerfStateId(IntEnum):
+    P0 = 0	
+    P1 = 1
+    P2 = 2
+    P3 = 3
+    P4 = 4
+    P5 = 5
+    P6 = 6
+    P7 = 7 
+    P8 = 8
+    P9 = 9
+    P10 = 10
+    P11 = 11
+    P12 = 12
+    P13 = 13
+    P14 = 14
+    P15 = 15
+    UNDEFINED = 16
+    ALL = 17
+
 class NvidiaThermalController(IntEnum):
     NONE = 0
     GPU_INTERNAL = 1

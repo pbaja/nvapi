@@ -1,4 +1,5 @@
 import ctypes
+import logging
 from _ctypes import CFuncPtr
 from typing import List
 
@@ -36,6 +37,10 @@ class NvidiaNativeAPI:
             except Exception as e:
                 raise ApiError(f"Failed to load nvapi.dll: {e}")
 
+        # Access violation workaround, for some reason nvapi_QueryInterface returns pointer address relative to itself
+        self._pointer_offset = ctypes.cast(self.api.nvapi_QueryInterface, ctypes.c_void_p).value & 0xFFFF00000000
+        logging.debug(f'Applying pointer offset of {hex(self._pointer_offset)}')
+
         # Functions
         self.GetErrorMessage                = self._wrap(0x6C2D048C, raiseErrors=False)
         self.Initialize                     = self._wrap(0x0150E828)
@@ -67,16 +72,9 @@ class NvidiaNativeAPI:
 
     def _wrap(self, address, raiseErrors=True):
 
-        # Access violation workaround
-        # THIS IS BAD. 
-        # TOOD: Explore more. Test with more devices. Find out what is happening.
-        paddr = self.api.nvapi_QueryInterface(0x0150E828)
-        faddr = ctypes.cast(self.api.nvapi_QueryInterface, ctypes.c_void_p).value
-        offset = (faddr-paddr) & 0xFFFF00000000
-
         # Get function from pointer
         pointer = self.api.nvapi_QueryInterface(address)
-        native_function = NvidiaFuncPtr(pointer + offset)
+        native_function = NvidiaFuncPtr(pointer + self._pointer_offset)
 
         # Just return native function if we do not want to catch errors
         if not raiseErrors:
@@ -89,7 +87,16 @@ class NvidiaNativeAPI:
             if result != NvidiaStatus.OK:
                 msg = ctypes.create_string_buffer(NVAPI_SHORT_STRING_MAX)
                 self.GetErrorMessage(result, ctypes.byref(msg))
-                raise NvidiaError(msg.value.decode(), NvidiaStatus(result))
+                status = NvidiaStatus(result)
+
+                # Library self check
+                if status == NvidiaStatus.INCOMPATIBLE_STRUCT_VERSION:
+                    logging.error('## ')
+                    logging.error('## Nvidia reported incompatible struct version. This is an error in the library.')
+                    logging.error('## Please report it at https://github.com/pbaja/nvapi. Please include stack trace and info about your hardware. Thank you.')
+                    logging.error('## ')
+
+                raise NvidiaError(msg.value.decode(), status)
             return None
         return wrapper
 
